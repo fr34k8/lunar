@@ -13,22 +13,22 @@
 
 audit_aws_rec_ec () {
   print_function  "audit_aws_rec_ec"
-  verbose_message "ElastiCache Recommendation" "check"
+  check_message   "ElastiCache Recommendation"
   # Ensure that your AWS ElastiCache Reserved Instances (RIs) are renewed before expiration
   command="aws elasticache describe-reserved-cache-nodes --region \"${aws_region}\" --query 'ReservedCacheNodes[].ReservedCacheNodeId' --output text"
   command_message "${command}"
-  caches=$( eval "${command}" )
+  caches=$( eval  "${command}" )
   for cache in ${caches}; do
     command="aws elasticache describe-reserved-cache-nodes --region \"${aws_region}\" --reserved-cache-node-id \"${cache}\" --query 'ReservedDBInstances[].ReservedCacheNodes' --output text | cut -f1 -d."
-    command_message "${command}"
+    command_message   "${command}"
     start_date=$( eval "${command}" )
     command="aws elasticache describe-reserved-cache-nodes --region \"${aws_region}\" --reserved-cache-node-id \"${cache}\" --query 'ReservedDBInstances[].Duration' --output text"
-    command_message "${command}"
+    command_message  "${command}"
     dur_secs=$( eval "${command}" )
     curr_secs=$( date "+%s" )
     if [ "${os_name}" = "Linux" ]; then
       command="date -d \"${start_date}\" \"+%s\""
-      command_message "${command}"
+      command_message    "${command}"
       start_secs=$( eval "${command}" )
     else
       command="date -j -f \"%Y-%m-%dT%H:%M:%SS\" \"${start_date}\" \"+%s\""

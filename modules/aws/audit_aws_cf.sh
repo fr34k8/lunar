@@ -15,15 +15,15 @@
 audit_aws_cf () {
   # Check Cloud Formation stacks are using SNS
   print_function  "audit_aws_cf"
-  verbose_message "CloudFormation" "check"
+  check_message   "CloudFormation"
   command="aws cloudformation list-stacks --region \"${aws_region}\" --query 'StackSummaries[].StackId' --output text"
   command_message "${command}"
-  stacks=$( eval "${command}" )
+  stacks=$( eval  "${command}" )
   for stack in ${stacks}; do 
     command="aws cloudformation describe-stacks --region \"${aws_region}\" --stack-name \"${stack}\" --query 'Stack[].NotificationARNs' --output text"
     command_message "${command}"
-    check=$( eval "${command}" )
-    stack=$( echo "${stack}" | cut -f2 -d/ )
+    check=$( eval   "${command}" )
+    stack=$( echo   "${stack}" | cut -f2 -d/ )
     if [ "${check}" ]; then
       increment_secure   "SNS topic ${exists} for CloudFormation stack \"${stack}\""
     else
@@ -33,11 +33,11 @@ audit_aws_cf () {
   # Check stacks have a policy
   command="aws cloudformation list-stacks --region \"${aws_region}\" --query 'StackSummaries[].StackName' --output text"
   command_message "${command}"
-  stacks=$( eval "${command}" )
+  stacks=$( eval  "${command}" )
   for stack in ${stacks}; do 
     command="aws cloudformation get-stack-policy --region \"${aws_region}\" --stack-name \"${stack}\" --query 'StackPolicyBody' --output text 2> /dev/null"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ "${check}" ]; then
       increment_secure   "CloudFormation stack \"${stack}\" has a policy"
     else

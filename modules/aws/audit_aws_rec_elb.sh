@@ -16,14 +16,14 @@
 
 audit_aws_rec_elb () {
   print_function  "audit_aws_rec_elb"
-  verbose_message "ELB Recommendations" "check"
+  check_message   "ELB Recommendations"
   command="aws elb describe-load-balancers --region \"${aws_region}\" --query \"LoadBalancerDescriptions[].LoadBalancerName\" --output text"
   command_message "${command}"
-	elbs=$( eval "${command}" )
+	elbs=$( eval    "${command}" )
   for elb in ${elbs}; do
     command="aws elb describe-load-balancer-attributes --region \"${aws_region}\" --load-balancer-name \"${elb}\" --query \"LoadBalancerAttributes.ConnectionDraining\" | grep Enabled | grep true"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ ! "${check}" ]; then
       increment_insecure "ELB \"${elb}\" does not have connection draining enabled"
       verbose_message    "aws elb modify-load-balancer-attributes --region \"${aws_region}\" --load-balancer-name \"${elb}\" --load-balancer-attributes \"{\\\"ConnectionDraining\\\":{\\\"Enabled\\\":true, \\\"Timeout\\\":300}}\"" "fix"
@@ -32,7 +32,7 @@ audit_aws_rec_elb () {
     fi
     command="aws elb describe-load-balancer-attributes --region \"${aws_region}\" --load-balancer-name \"${elb}\"  --query \"LoadBalancerAttributes.CrossZoneLoadBalancing\" | grep Enabled | grep true"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ ! "${check}" ]; then
       increment_insecure "ELB \"${elb}\" does not have cross zone balancing enabled"
     else
@@ -40,14 +40,14 @@ audit_aws_rec_elb () {
     fi
     command="aws elb describe-instance-health --region \"${aws_region}\" --load-balancer-name \"${elb}\"  --query \"InstanceStates[].State\" | grep -c InService"
     command_message "${command}"
-    number=$( eval "${command}" )
+    number=$( eval  "${command}" )
     if [ "${number}" -lt 2 ]; then
       increment_insecure "ELB \"${elb}\" does not have at least 2 instances in service"
     else
       increment_secure   "ELB \"${elb}\" has at least two instances in service"
     fi
     command="aws elb describe-instance-health --region \"${aws_region}\" --load-balancer-name \"${elb}\"  --query \"InstanceStates[].InstanceState\" --filter ansible_value=state,Values='OutOfService' --output text"
-    command_message "${command}"
+    command_message   "${command}"
     instances=$( eval "${command}" )
     for instance in ${instances}; do
       increment_insecure "ELB \"${elb}\" instance \"${instance}\" is out of service "

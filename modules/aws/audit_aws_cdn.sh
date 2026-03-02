@@ -16,16 +16,16 @@
 
 audit_aws_cdn () {
   print_function  "audit_aws_cdn"
-  verbose_message "Cloudfront"  "check"
+  check_message   "Cloudfront"
   aws configure set preview.cloudfront true
   command="aws cloudfront list-distributions --query 'DistributionList.Items[].Id' --output text | grep -v null"
   command_message "${command}"
-  cdns=$( eval "${command}" )
+  cdns=$( eval    "${command}" )
   for cdn in ${cdns}; do 
     # Check Cloudfront is using WAF
     command="aws cloudfront get-distribution --id \"${cdn}\" --query 'Distribution.DistributionConfig.WebACLId' --output text"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ "${check}" ]; then
       increment_secure   "Cloudfront CDN \"${cdn}\" is WAF integration enabled"
     else
@@ -34,7 +34,7 @@ audit_aws_cdn () {
     # Check logging is enabled
     command="aws cloudfront get-distribution --id \"${cdn}\" --query 'Distribution.DistributionConfig.Logging.Enabled' | grep true"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ "${check}" ]; then
       increment_secure   "Cloudfront CDN \"${cdn}\" has logging enabled"
     else
@@ -43,7 +43,7 @@ audit_aws_cdn () {
     # check SSL protocol versions being used against deprecated ones
     command="aws cloudfront get-distribution --id \"${cdn}\" --query 'Distribution.DistributionConfig.Origins.Items[].CustomOriginConfig.OriginSslProtocols.Items' | grep -E \"SSLv3|SSLv2\""
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ ! "${check}" ]; then
       increment_secure   "Cloudfront CDN \"${cdn}\" is not using a deprecated version of SSL"
     else
@@ -52,7 +52,7 @@ audit_aws_cdn () {
     # check if HTTP only being used 
     command="aws cloudfront get-distribution --id \"${cdn}\" --query 'Distribution.DistributionConfig.Origins.Items[].CustomOriginConfig.OriginProtocolPolicy' | grep -E \"http-only\""
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ ! "${check}" ]; then
       increment_secure   "Cloudfront CDN \"${cdn}\" is not using HTTP only"
     else

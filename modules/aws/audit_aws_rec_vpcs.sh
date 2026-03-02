@@ -14,15 +14,15 @@
 
 audit_aws_rec_vpcs () {
   print_function  "audit_aws_rec_vpcs"
-  verbose_message "VPC Recommendations" "check"
+  check_message   "VPC Recommendations"
   # Check Security Groups have Name tags
   command="aws ec2 describe-vpcs --region \"${aws_region}\" --query 'Vpcs[].VpcId' --output text"
   command_message "${command}"
-  vpcs=$( eval "${command}" )
+  vpcs=$( eval    "${command}" )
   for vpc in ${vpcs}; do
     if [ ! "${vpc}" = "default" ]; then
       command="aws ec2 describe-vpcs --region \"${aws_region}\" --vpc-ids \"${vpcs}\" --query \"Vpcs[].Tags[?Key==\\\`Name\\\`].Value\" 2> /dev/null --output text"
-      command_message "${command}"
+      command_message       "${command}"
       ansible_value=$( eval "${command}" )
       if [ -z "${ansible_value}" ]; then
         increment_insecure "AWS VPC ${vpc} does not have a Name tag"
@@ -31,7 +31,7 @@ audit_aws_rec_vpcs () {
         if [ "${strict_valid_names}" = "y" ]; then
           command="echo \"${ansible_value}\" |grep \"^vpc-$valid_tag_string\""
           command_message "${command}"
-          check=$( eval "${command}" )
+          check=$( eval   "${command}" )
           if [ "${check}" ]; then
             increment_secure   "AWS VPC \"${vpc}\" has a valid Name tag"
           else
@@ -50,9 +50,9 @@ audit_aws_rec_vpcs () {
     command_message "${command}"
     check=$( eval "${command}" )
     if [ -n "${check}" ]; then
-      increment_insecure   "AWS VPC \"${vpc}\" does not have VPN tunnel redundancy"
+      increment_insecure "AWS VPC \"${vpc}\" does not have VPN tunnel redundancy"
     else
-      increment_secure     "AWS VPC \"${vpc}\" has VPN tunnel redundancy"
+      increment_secure   "AWS VPC \"${vpc}\" has VPN tunnel redundancy"
     fi
   done
 }

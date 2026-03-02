@@ -18,15 +18,15 @@
 #.
 
 audit_aws_mfa () {
-  print_function  "audit_aws_mfa"
-  verbose_message "MFA"   "check"
+  print_function "audit_aws_mfa"
+  check_message  "MFA"
   command="aws iam get-credential-report --query 'Content' --output text | \"${base64_d}\" | cut -d, -f1,4,8 | sed '1 d' | awk -F '\\\n' '{print \$1}'"
   command_message "${command}"
   entries=$( eval "${command}" )
   for entry in ${entries}; do
     user=$( echo "${entry}" | cut -d, -f1 )
     pass=$( echo "${entry}" | cut -d, -f2 )
-    mfa=$( echo "${entry}" | cut -d, -f3 )
+    mfa=$(  echo "${entry}" | cut -d, -f3 )
     if [ "${user}" = "<root_account>" ]; then
       if [ "${mfa}" = "false" ]; then
         increment_insecure "Account \"${user}\" does not have MFA enabled"

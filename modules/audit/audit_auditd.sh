@@ -47,7 +47,7 @@ audit_auditd () {
           increment_secure   "Application \"${app_name}\" is not disabled in \"${check_file}\""
         fi
         if [ -n "${package_enabled_test}" ]; then
-          increment_secure "Application \"${app_name}\" is enabled \"${check_file}\""
+          increment_secure   "Application \"${app_name}\" is enabled \"${check_file}\""
         else
           temp_file="${temp_dir}/${package_name}"
           increment_insecure "Application \"${app_name}\" is not enabled in \"${check_file}\""
@@ -77,17 +77,17 @@ audit_auditd () {
         if [ -n "${package_disabled_test}" ]; then
           temp_file="${temp_dir}/${package_name}"
           increment_insecure "${app_name} is disabled in ${check_file}"
-          backup_file      "${check_file}"
+          backup_file        "${check_file}"
           lockdown_command="cat ${check_file} |sed 's/${package_name}=0//g' > ${temp_file} ; cat ${temp_file} > ${check_file} ; update-grub"
           lockdown_message="Application/Feature \"${app_name} \" in \"${check_file}\" to enabled"
-          execute_lockdown "${lockdown_command}" "${lockdown_message}" "sudo"
+          execute_lockdown   "${lockdown_command}" "${lockdown_message}" "sudo"
           existing_value=$( grep "^GRUB_CMDLINE_LINUX" "${check_file}" |cut -f2 -d= | sed "s/\"//g" )
           new_value="GRUB_CMDLINE_LINUX=\"${package_name}=${package_value} ${existing_value}\""
           lockdown_command="cat ${check_file} |sed 's/^GRUB_CMDLINE_LINUX/GRUB_CMDLINE_LINUX=\"${new_value}\"/g' > ${temp_file} ; cat ${temp_file} > ${check_file} ; update-grub"
           lockdown_message="Application/Feature \"${app_name}\" to enabled"
-          execute_lockdown "${lockdown_command}" "${lockdown_message}" "sudo"
+          execute_lockdown   "${lockdown_command}" "${lockdown_message}" "sudo"
         else
-          increment_secure "${app_name} is not disabled in ${check_file}"
+          increment_secure   "${app_name} is not disabled in ${check_file}"
         fi
         if [ -n "${package_enabled_test}" ]; then
           increment_secure   "${app_name} is enabled ${check_file}"
@@ -114,13 +114,13 @@ audit_auditd () {
       check_launchctl_service "com.apple.auditd" "on"
     fi
     if [ "${os_name}" = "Linux" ]; then
-      check_linux_service     "auditd" "on"
+      check_linux_service     "auditd"           "on"
     fi
     check_file="/etc/audit/auditd.conf"
     check_file_value "is" "${check_file}" "log_group" "eq" "adm" "hash"
     for check_file in /sbin/auditctl /sbin/aureport /sbin/ausearch /sbin/autrace /sbin/auditd /sbin/augenrules; do
       if [ -f "${check_file}" ]; then
-        check_file_perms "${check_file}" "0750" "root" "root"
+        check_file_perms   "${check_file}" "0750" "root" "root"
       fi
     done
     if [ -d "/etc/audit" ]; then
@@ -133,7 +133,7 @@ audit_auditd () {
     fi
     check_file="/var/log/audit/audit.log"
     if [ -f "${check_file}" ]; then
-      check_file_perms "${check_file}" "0640" "root" "root"
+      check_file_perms   "${check_file}" "0640" "root" "root"
     fi
   else
     na_message "${string}"

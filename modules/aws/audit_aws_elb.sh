@@ -19,14 +19,14 @@
 audit_aws_elb () {
   # Ensure ELBs have logging enabled
   print_function  "audit_aws_elb"
-  verbose_message "ELB"   "check"
+  check_message   "ELB"
   command="aws elb describe-load-balancers --region \"${aws_region}\" --query \"LoadBalancerDescriptions[].LoadBalancerName\" --output text"
   command_message "${command}"
-  elbs=$( eval "${command}" )
+  elbs=$( eval    "${command}" )
   for elb in ${elbs}; do
     command="aws elb describe-load-balancers --region \"${aws_region}\" --load-balancer-name \"${elb}\"  --query \"LoadBalancerDescriptions[].AccessLog\" | grep true"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval    "${command}" )
     if [ -z "${check}" ]; then
       increment_insecure "ELB \"${elb}\" does not have access logging enabled"
       verbose_message    "aws elb modify-load-balancer-attributes --region ${aws_region} --load-balancer-name ${elb} --load-balancer-attributes \"{\\\"AccessLog\\\":{\\\"Enabled\\\":true,\\\"EmitInterval\\\":60,\\\"S3BucketName\\\":\\\"elb-logging-bucket\\\"}}\"" fix
@@ -35,7 +35,7 @@ audit_aws_elb () {
     fi
     # Ensure ELBs are not using HTTP
     command="aws elb describe-load-balancers --region \"${aws_region}\" --load-balancer-name \"${elb}\"  --query \"LoadBalancerDescriptions[].ListenerDescriptions[].Listener[].Protcol\" --output text"
-    command_message "${command}"
+    command_message  "${command}"
     protocol=$( eval "${command}" )
     if [ "${protocol}" = "HTTP" ]; then
       increment_insecure "ELB \"${elb}\" is using HTTP"
@@ -45,14 +45,14 @@ audit_aws_elb () {
     # Ensure ELB SGs do not have port 80 open to the world
     command="aws elb describe-load-balancers --region \"${aws_region}\" --load-balancer-name \"${elb}\"  --query \"LoadBalancerDescriptions[].SecurityGroups\" --output text"
     command_message "${command}"
-    sgs=$( eval "${command}" )
+    sgs=$( eval     "${command}" )
     for sg in ${sgs}; do
       check_aws_open_port "${sg}" "80" "tcp" "HTTP" "ELB" "${elb}"
     done
     # Ensure no deprecated ciphers of protocols are being used
     command="aws elb describe-load-balancer-policies --region \"${aws_region}\" --load-balancer-name \"${elb}\" --output text"
     command_message "${command}"
-    list=$( eval "${command}" )
+    list=$( eval     "${command}" )
     for cipher in SSLv2 RC2-CBC-MD5 PSK-AES256-CBC-SHA PSK-3DES-EDE-CBC-SHA KRB5-DES-CBC3-SHA KRB5-DES-CBC3-MD5 \
                   PSK-AES128-CBC-SHA PSK-RC4-SHA KRB5-RC4-SHA KRB5-RC4-MD5 KRB5-DES-CBC-SHA KRB5-DES-CBC-MD5 \
                   EXP-EDH-RSA-DES-CBC-SHA EXP-EDH-DSS-DES-CBC-SHA EXP-ADH-DES-CBC-SHA EXP-DES-CBC-SHA \

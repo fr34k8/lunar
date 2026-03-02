@@ -43,7 +43,7 @@ audit_apache () {
     if [ "${os_name}" = "Linux" ]; then
       for service_name in httpd apache apache2 tomcat5 squid prixovy nginx; do
         check_linux_service "${service_name}" "off"
-        check_linux_package "uninstall" "${service_name}" 
+        check_linux_package "uninstall"       "${service_name}" 
       done
     fi
     check_file_perms /var/log/httpd 0640 root apache

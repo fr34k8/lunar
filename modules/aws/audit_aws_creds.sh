@@ -14,8 +14,8 @@
 #.
 
 audit_aws_creds () {
-  print_function  "audit_aws_creds"
-  verbose_message "Credentials"   "check"
+  print_function "audit_aws_creds"
+  check_message  "Credentials"
   command="aws iam generate-credential-report > /dev/null 2>&1"
   command_message "${command}"
   eval "${command}"
@@ -76,29 +76,29 @@ audit_aws_creds () {
             fi
             rot_days=$( echo "(${rot_sec} - ${cur_sec})/84600" | bc )
             if [ "${rot_days}" -gt 90 ]; then
-              increment_insecure  "Account \"${aws_user}\" will not rotate their AWS Console password in the next 90 days consider locking access"
+              increment_insecure "Account \"${aws_user}\" will not rotate their AWS Console password in the next 90 days consider locking access"
             else
-              increment_secure    "Account \"${aws_user}\" will rotate their AWS Console password in the past 90 days"
+              increment_secure   "Account \"${aws_user}\" will rotate their AWS Console password in the past 90 days"
             fi
           else
-            increment_insecure    "Account \"${aws_user}\" will not rotate their AWS Console password in the next 90 days consider locking access"
+            increment_insecure   "Account \"${aws_user}\" will not rotate their AWS Console password in the next 90 days consider locking access"
           fi
         fi
         if [ "${key1_use}" = "true" ]; then
           if [ "${os_name}" = "Linux" ]; then
             command="date -d \"${key1_last}\" \"+%s\""
-            command_message "${command}"
+            command_message  "${command}"
             key1_sec=$( eval "${command}" )
           else
             command="date -j -f \"%Y-%m-%dT%H:%M:%S+00:00\" \"${key1_last}\" \"+%s\""
-            command_message "${command}"
+            command_message  "${command}"
             key1_sec=$( eval "${command}" )
           fi
           key1_days=$( echo "(${cur_sec} - ${key1_sec})/84600" | bc )
           if [ "${key1_days}" -gt 90 ]; then
-            increment_insecure    "Account \"${aws_user}\" has not used AWS API credentials in over 90 days consider removing keys"
+            increment_insecure "Account \"${aws_user}\" has not used AWS API credentials in over 90 days consider removing keys"
           else
-            increment_secure      "Account \"${aws_user}\" has used AWS API credentials in the past 90 days"
+            increment_secure   "Account \"${aws_user}\" has used AWS API credentials in the past 90 days"
           fi
           k_test=$( echo "${key1_rot}" |grep "[0-9]" )
           if [ -n "${k_test}" ]; then
@@ -113,29 +113,29 @@ audit_aws_creds () {
             fi
             rot_days=$( echo "(${cur_sec} - ${rot_sec})/84600" | bc )
             if [ "${rot_days}" -gt 90 ]; then
-              increment_insecure  "Account \"${aws_user}\" will not rotate their AWS API credentials in the next 90 days"
+              increment_insecure "Account \"${aws_user}\" will not rotate their AWS API credentials in the next 90 days"
             else
-              increment_secure    "Account \"${aws_user}\" has rotated their AWS API credentials in the last 90 days"
+              increment_secure   "Account \"${aws_user}\" has rotated their AWS API credentials in the last 90 days"
             fi
           else
-            increment_insecure    "Account \"${aws_user}\" will not rotate their AWS API credentials in the next 90 days"
+            increment_insecure   "Account \"${aws_user}\" will not rotate their AWS API credentials in the next 90 days"
           fi
         fi
         if [ "${key2_use}" = "true" ]; then
           if [ "${os_name}" = "Linux" ]; then
             command="date -d \"${key2_last}\" \"+%s\""
-            command_message "${command}"
+            command_message  "${command}"
             key2_sec=$( eval "${command}" )
           else
             command="date -j -f \"%Y-%m-%dT%H:%M:%S+00:00\" \"${key2_last}\" \"+%s\""
-            command_message "${command}"
+            command_message  "${command}"
             key2_sec=$( eval "${command}" )
           fi
           key2_days=$( echo "(${cur_sec} - ${key2_sec})/84600" | bc )
           if [ "${key2_days}" -gt 90 ]; then
-            increment_insecure    "Account \"${aws_user}\" has not used AWS SOA credentials in over 90 days consider removing keys"
+            increment_insecure "Account \"${aws_user}\" has not used AWS SOA credentials in over 90 days consider removing keys"
           else
-            increment_secure      "Account \"${aws_user}\" has used AWS SOA credentials in the past 90 days"
+            increment_secure   "Account \"${aws_user}\" has used AWS SOA credentials in the past 90 days"
           fi
           k_test=$( echo "${key2_rot}" |grep "[0-9]" )
           if [ -n "${k_test}" ]; then
@@ -150,12 +150,12 @@ audit_aws_creds () {
             fi
             rot_days=$( echo "(${cur_sec} - ${rot_sec})/84600" | bc )
             if [ "${rot_days}" -gt 90 ]; then
-              increment_insecure  "Account \"${aws_user}\" will not rotate their AWS SOA credentials in the next 90 days"
+              increment_insecure "Account \"${aws_user}\" will not rotate their AWS SOA credentials in the next 90 days"
             else
-              increment_secure    "Account \"${aws_user}\" has rotated their AWS SOA credentials in the last 90 days"
+              increment_secure   "Account \"${aws_user}\" has rotated their AWS SOA credentials in the last 90 days"
             fi
           else
-            increment_insecure    "Account \"${aws_user}\" will not rotate their AWS SOA credentials in the next 90 days"
+            increment_insecure   "Account \"${aws_user}\" will not rotate their AWS SOA credentials in the next 90 days"
           fi
         fi
       fi

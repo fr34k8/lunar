@@ -12,11 +12,11 @@
 #.
 
 audit_aws_rec_monitoring () {
-  print_function  "audit_aws_rec_monitoring"
-  verbose_message "CloudWatch Recommendations" "check"
+  print_function    "audit_aws_rec_monitoring"
+  check_message     "CloudWatch Recommendations"
   command="aws cloudtrail describe-trails --region \"${aws_region}\" --query \"trailList[].CloudWatchLogsLogGroupArn\" --output text |awk -F':' '{print \$7}'"
-  command_message "${command}"
-  trails=$( eval "${command}" )
+  command_message   "${command}"
+  trails=$( eval    "${command}" )
   if [ "${trails}" ]; then
     increment_secure "CloudWatch log groups exits for CloudTrail"
     for trail in ${trails}; do
@@ -34,7 +34,7 @@ audit_aws_rec_monitoring () {
         for metric in RunInstances instanceType ; do
           command="aws logs describe-metric-filters --region \"${aws_region}\" --log-group-name \"${trail}\" --query \"metricFilters[].filterPattern\" --output text | grep \"${metric}\""
           command_message "${command}"
-          check=$( eval "${command}" )
+          check=$( eval   "${command}" )
           if [ -n "${check}" ]; then
             increment_secure   "CloudWatch log group \"${trail}\" metrics include \"${metric}\""
           else

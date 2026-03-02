@@ -20,15 +20,15 @@
 audit_aws_iam () {
   # Root account should only be used sparingly, admin functions and responsibilities should be delegated
   print_function  "audit_aws_iam"
-  verbose_message "IAM"   "check"
+  check_message   "IAM"
   command="aws iam generate-credential-report > /dev/null 2>&1"
   command_message "${command}"
   eval "${command}"
   command="date +%Y-%m"
-  command_message "${command}"
+  command_message   "${command}"
   date_test=$( eval "${command}" )
   command="aws iam get-credential-report --query 'Content' --output text | \"${base64_d}\" | cut -d, -f1,5,11,16 | grep -B1 '<root_account>' | cut -f2 -d, | cut -f1,2 -d- | grep '[0-9]'"
-  command_message "${command}"
+  command_message    "${command}"
   last_login=$( eval "${command}" )
   if [ "${date_test}" = "${last_login}" ]; then
     increment_insecure "Root account appears to be being used regularly"
@@ -38,7 +38,7 @@ audit_aws_iam () {
   # Check to see if there is an IAM master role
   command="aws iam get-role --role-name \"${aws_iam_master_role}\" 2> /dev/null"
   command_message "${command}"
-  check=$( eval "${command}" )
+  check=$( eval   "${command}" )
   if [ -n "${check}" ]; then 
     increment_secure   "IAM Master role \"${aws_iam_master_role}\" ${exists}"
   else
@@ -50,7 +50,7 @@ audit_aws_iam () {
   # Check there is an IAM manager role
   command="aws iam get-role --role-name \"${aws_iam_manager_role}\" 2> /dev/null"
   command_message "${command}"
-  check=$( eval "${command}" )
+  check=$( eval   "${command}" )
   if [ -n "${check}" ]; then 
     increment_secure   "IAM Manager role \"${aws_iam_manager_role}\" ${exists}"
   else
@@ -61,12 +61,12 @@ audit_aws_iam () {
   fi
   # Check groups have members
   command="aws iam list-groups --query 'Groups[].GroupName' --output text"
-  command_message "${command}"
-  groups=$( eval "${command}" )
+  command_message  "${command}"
+  groups=$( eval   "${command}" )
   for group in ${groups}; do
     command="aws iam get-group --group-name \"${group}\" --query \"Users\" --output text"
     command_message "${command}"
-    users=$( eval "${command}" )
+    users=$( eval   "${command}" )
     if [ -n "${users}" ]; then
       increment_secure   "IAM group \"${group}\" is not empty"
     else
@@ -75,12 +75,12 @@ audit_aws_iam () {
   done
   command="aws iam list-users --query 'Users[].UserName' --output text"
   command_message "${command}"
-  users=$( eval "${command}" )
+  users=$( eval   "${command}" )
   for user in ${users}; do
     # Check for inactive users
     command="aws iam list-access-keys --user-name \"${user}\" --query \"AccessKeyMetadata\" --output text"
     command_message "${command}"
-    check=$( eval "${command}" )
+    check=$( eval   "${command}" )
     if [ -n "${check}" ]; then
       increment_secure   "IAM user \"${user}\" is active"
     else
@@ -89,7 +89,7 @@ audit_aws_iam () {
     fi
     # Check users do not have attached policies, they should be members of groups which have those policies
     command="aws iam list-attached-user-policies --user-name \"${user}\" --query \"AttachedPolicies[].PolicyArn\" --output text"
-    command_message "${command}"
+    command_message  "${command}"
     policies=$( eval "${command}" )
     if [ -n "${policies}" ]; then
       for policy in ${policies}; do

@@ -19,13 +19,13 @@
 
 audit_aws_password_policy () {
   print_function  "audit_aws_password_policy"
-  verbose_message "Password Policy"   "check"
+  check_message   "Password Policy"
   command="aws iam get-account-password-policy 2> /dev/null"
   command_message "${command}"
-  policy=$( eval "${command}" )
+  policy=$( eval  "${command}" )
   command="echo \"${policy}\" | wc -l | sed \"s/ //g\""
   command_message "${command}"
-  length=$( eval "${command}" )
+  length=$( eval  "${command}" )
   if [ "${length}" = "0" ]; then
     increment_insecure  "No password policy ${exists}"
     verbose_message     "aws iam update-account-password-policy --require-uppercase-characters"  "fix"
